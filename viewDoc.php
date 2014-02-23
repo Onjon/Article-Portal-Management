@@ -2,6 +2,12 @@
 session_start();
 error_reporting( 0 );
 include('process/authentication.php');
+/*
+if( !isset( $_SESSION[ 'userid' ] ) ) {
+    header( "Location: index.php" );
+    exit();
+}
+*/
 include('process/processor.php');
 $access = new processor();
 $result = $access->show_active_user();
@@ -110,7 +116,11 @@ $download_key = $_SESSION[ 'key' ] ;
             window.open( "viewDoc.php?id="+a ); 
         }
 	</script>
-	
+	<script>
+        function showArticle( userIdParam , dateParam ) {
+           window.open( "viewArticleDetails.php?userId=" + userIdParam + "&&date=" + dateParam ) ; 
+        }
+    </script>
 </head>
 <body>
     
@@ -225,32 +235,20 @@ $download_key = $_SESSION[ 'key' ] ;
         ?>
         </center>
     <!-- Download Request End -->
+    Display Articles of <b><?=$_GET[ 'articleDate' ];?></b> 
         <div class="g12 widgets">
+            
             <table class="datatable">
 				<thead>
 					<tr>
                     	<th>User Name</th>
                         <th>Number of Artcle</th>
+                        <th>View</th>
                         <th>Download</th>
 					</tr>
 				</thead>
 				<tbody>
-                    <!-- 
-					<?php
-						while($row = mysql_fetch_array($result))
-						{
-						echo '  <tr class="gradeX">
-                                <td>'.date('d-m-Y').'</td>
-                                <td>'.$row['fname'].' '.$row['lname'].'</td>
-                                <td>'.$row['email'].'</td>
-                                <td>'.$row['rate'].'</td>
-                                <td class="c">20 <a href="#"> /Show all</a></td>
-                                <td class="c"><button type="button" onClick="doSubmit( '.$row['id'].' , \''.date('Y-m-d').'\' );" >Download</button></td>';
-                                
-                            echo '</tr>';
-						}
-					?>
-                    -->
+                   
                     <?php  
                     if( $getDocByDateRes == 1 ) {
                         $getUserId = $getDocByDate -> getUserId();
@@ -258,10 +256,14 @@ $download_key = $_SESSION[ 'key' ] ;
                         
                         $totalDoc = sizeof( $getUserId );
                         for( $i = 0 ; $i < $totalDoc ; $i++ ) {
+                            if( $getUserId[ $i ] != $_SESSION[ 'userid' ] && $_SESSION[ 'access' ] != "admin" ) {
+                                continue;
+                            }
                     ?>
                       <tr class="gradeX">
                         <td><?=GetUserName::getName( $getUserId[ $i ] );?></td>
                         <td><b><?=$getTotalDocPerDay[ $i ];?></b></td>
+                        <td class="c"><button type="button" onClick="showArticle( <?=$getUserId[ $i ];?> , '<?=$startDate;?>' );" >View</button></td> 
                         <td class="c"><button type="button" onClick="doSubmit( <?=$getUserId[ $i ];?> , '<?=$startDate;?>' );" >Download</button></td> 
                     </tr>
                     <?php

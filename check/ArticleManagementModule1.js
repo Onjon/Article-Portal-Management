@@ -72,9 +72,11 @@
 			b = document.getElementById( 'text_field' ).value ;
             d = document.getElementById( 'autocomplete' ).value ;
             e = document.getElementById( 'set_city' ).value ;
+            /*
 			f1 = document.getElementById( 'file_upload_1' ) ;
 			f2 = document.getElementById( 'file_upload_2' ) ;
 			f3 = document.getElementById( 'file_upload_3' ) ;
+            */
 			arrayOfFiles = new Array() ;
 			if( checkNull( a ) == true ) {
 				alert( 'Please provide the article data!' ) ;
@@ -88,14 +90,17 @@
 				alert( 'Please provide the city!' ) ;
 				return false ;
 			}
+            /*
 			if( checkNull( f1.value ) == true && checkNull( f2.value ) == true && checkNull( f3.value ) == true ) {
 				alert( 'Please provide at least 1 photo!' ) ;
 				return false ;
 			}
+            */
 			if( ! ( titleOnkeyUp() == true && articleOnkeyUp() == true ) ) {
 				alert( 'Article minimum uniqueness not fullfilled!' ) ;
 				return false ;
 			}
+            /*
 			if( checkNull( f1.value ) == false ) {
 				arrayOfFiles.push( f1.files[ 0 ] ) ;
 			}
@@ -126,6 +131,7 @@
 				}
 				listOfImageNames.push( tempFileName ) ;
 			}
+            */
 			if( window.XMLHttpRequest ) {
 				xmlhttp = new XMLHttpRequest() ;
 			}
@@ -139,6 +145,7 @@
 					resultDiv = document.getElementById( "responseText" ) ;
 					resultDiv.innerHTML = a ;
                     //console.log( a ) ;
+                    /*
 					if( a == 'Successfully added article onto the database!' ) {
 						sz = listOfImageData.length ;
 						paramString = "user_id=" + localUserId ;
@@ -157,11 +164,12 @@
 						}
 						doSecondAjaxRequest( "check/writeFile.php" , paramString ) ;
 					}
+                    */
 				}
-			}			
-			xmlhttp.open( "POST" , "check/checkData.php" , true ) ;
+			}
+			xmlhttp.open( "POST" , "check/checkData1.php" , true ) ;
 			xmlhttp.setRequestHeader( "Content-type" , "application/x-www-form-urlencoded; charset=UTF-8" ) ;
-			xmlhttp.send( "a=" + a + "&b=" + b + "&city=" + document.getElementById( "autocomplete" ).value ) ;
+			xmlhttp.send( "a=" + a + "&b=" + b + "&city=" + document.getElementById( "autocomplete" ).value + "&article_id=" + articleTableDataId ) ;
 		}
 		
 		function articleOnkeyUp() {
@@ -261,7 +269,7 @@
 		}
 		
 		function getAllData() {
-			var xmlhttp ;
+			var xmlhttp , a , b ;
 			if( window.XMLHttpRequest ) {
 				xmlhttp = new XMLHttpRequest() ;
 			}
@@ -272,11 +280,15 @@
 				var arr , i , j ;
 				if( xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
 					arr = JSON.parse( xmlhttp.responseText ) ;
+                    //console.log( arr ) ;
 					listOfAllArticleData = arr ;
 					populateLocalDataSet() ;
 				}
 			}
+            a = document.getElementById( 'textarea_wysiwyg' ).value ;
+			b = document.getElementById( 'text_field' ).value ;
+            console.log( a + "...." + b ) ;
 			xmlhttp.open( "POST" , "check/getAllData.php" , true ) ;
 			xmlhttp.setRequestHeader( "Content-type" , "application/x-www-form-urlencoded; charset=UTF-8" ) ;
-			xmlhttp.send() ;
+			xmlhttp.send( "a=" + a + "&b=" + b ) ;
 		}

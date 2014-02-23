@@ -1,5 +1,32 @@
 <?php
 
+function doCheckDateLeftSmall( $left , $right ) {
+    $year1 = date( 'Y' , strtotime( $left ) ) ;
+    $year2 = date( 'Y' , strtotime( $right ) ) ;
+    if( $year1 < $year2 ) {
+        return true ;
+    }
+    if( $year1 > $year2 ) {
+        return false ;
+    }
+    $month1 = date( 'm' , strtotime( $left ) ) ;
+    $month2 = date( 'm' , strtotime( $right ) ) ;
+    if( $month1 < $month2 ) {
+        return true ;
+    }
+    if( $month1 > $month2 ) {
+        return false ;
+    }
+    $day1 = date( 'd' , strtotime( $left ) ) ;
+    $day2 = date( 'd' , strtotime( $right ) ) ;
+    if( $day1 < $day2 ) {
+        return true ;
+    }
+    if( $day1 > $day2 ) {
+        return false ;
+    }
+    return true ;
+}
 session_start();
 error_reporting( 0 );
 include('process/authentication.php');
@@ -86,6 +113,11 @@ $getDoc = new GetDocument();
             window.open( "viewDoc.php?articleDate="+a ); 
         }
 	</script>
+    <script>
+        function doSubmit() {
+            document.chose_date.submit(); 
+        }
+    </script>
 	
 </head>
 <body>
@@ -117,90 +149,11 @@ $getDoc = new GetDocument();
 			
 		
     <section id="content">
-    
+        
         <div class="g12 nodrop">
             <h1>Written Articles</h1>
         </div>	
-    	<!-- Download Request Handler Start -->
-        <center>
-    <?php 
-        // Prefix 
-        $prefix = "check/" ;
         
-        // Declarer Files 
-        $folder_name = showFolders( $prefix );
-        // Get Total Folders 
-        $totalFolder = sizeof( $folder_name );  
-        // Check Submit or Not 
-        if( $fl == 1 ) {
-            // Set A Counter 
-            $c = 1 ; 
-            
-            // Get Folder Name and Senitize 
-            // $folderName = mysql_real_escape_string( $_POST[ 'folder_name' ] ); 
-            $reqUserId = mysql_real_escape_string( $_POST[ 'doc_user_id' ] );
-            $reqDate = mysql_real_escape_string( $_POST[ 'doc_date' ] );
-            $reqDate1 = date( 'd-m-Y' , strtotime( $reqDate ) );
-            $folderName = "[".$reqUserId."@".$reqDate1."]" ; 
-            if( file_exists( "check/" . $folderName ) ) {
-            
-                // Create Article Doc 
-                $getDoc -> setData( $reqUserId , date( 'Y-m-d' , strtotime( $reqDate ) ) );
-                // Get Data 
-                $art_res = $getDoc -> getResult();
-                if( $art_res == 1 ) {
-                    $art_title = $getDoc -> getTitle();
-                    $art_details = $getDoc -> getDetails();
-                    $art_city = $getDoc -> getCity();
-                    
-                    $total_art = sizeof( $art_title );
-                    // File Write 
-                    $my_file_doc = "check/" . $folderName . "/articles.doc" ;
-                    $handle = fopen($my_file_doc, 'w') ;
-                    
-                    $data = "" ; 
-                    for( $i = 0 ; $i < $total_art ; $i++ ) {
-                        $data .= "Title: " . $art_title[ $i ] . "\r\n" ;
-                        $data .= "City: " . $art_city[ $i ] . "\r\n" ;
-                        $data .= "\r\n" . $art_details[ $i ] . "\r\n" ;
-                        $data .= "------------------------------------------\r\n" ;
-                        $data .= "\r\n" ;
-                    }
-                    // Now Write into Doc File 
-                    fwrite($handle, $data);
-                    fclose( $handle );
-                    // Call Files Crawler 
-                    $files = showFiles( $prefix . $folderName . "/" );
-                    
-                    // Set Source and Destination 
-                    $source = $prefix . $folderName ;
-                    $destination = 'temp/' ;
-                    
-                    // Create Zip 
-                    $zipResult = $makeZip -> compress( $source , $destination );
-                    if( strlen( $zipResult ) >= 1 ) {
-                        
-                        // Encrypt File Name 
-                        $aa = base64_encode( getFileName( $zipResult ) );
-                        // Set Download URL with File Name 
-                        $donwloadURL = "temp/download.php?file_name=" . $aa ; 
-                        // Redirect for Download 
-                        echo "<meta HTTP-EQUIV='refresh' content='0;url=".$donwloadURL."'>";
-                        unlink( $my_file_doc );
-                        
-                    }
-                }
-                else {
-                    echo "<font color='red'>No Article Found!!!</font>";
-                }
-            }
-            else {
-                echo "<font color='red'>No Articles Available!!!</font>";
-            }
-        }
-        ?>
-        </center>
-    <!-- Download Request End -->
         <div class="g12 widgets">
             <table class="datatable">
 				<thead>
@@ -211,43 +164,66 @@ $getDoc = new GetDocument();
 					</tr>
 				</thead>
 				<tbody>
-                    <!-- 
-					<?php
-						while($row = mysql_fetch_array($result))
-						{
-						echo '  <tr class="gradeX">
-                                <td>'.date('d-m-Y').'</td>
-                                <td>'.$row['fname'].' '.$row['lname'].'</td>
-                                <td>'.$row['email'].'</td>
-                                <td>'.$row['rate'].'</td>
-                                <td class="c">20 <a href="#"> /Show all</a></td>
-                                <td class="c"><button type="button" onClick="doSubmit( '.$row['id'].' , \''.date('Y-m-d').'\' );" >Download</button></td>';
-                                
-                            echo '</tr>';
-						}
-					?>
-                    -->
+                    
                     <?php  
+                    $this_month = date( 'M' );
+                    
                     if( $getShortDocRes == 1 ) {
                         $getShortDate = $getShortDoc -> getDT();
                         $getTotalDocPerDay = $getShortDoc -> getTotal();
                         
+                        $req_fl = 0 ;
+                        if( isset( $_POST[ 'start_date' ] ) ) {
+                            $req_fl = 1 ;
+                            // Start Date 
+                            $date_start = mysql_real_escape_string( $_POST[ 'start_date' ] );
+                            $date_start = date( 'd-m-Y' , strtotime( $date_start ) ); // Request Date 
+                            // End Date 
+                            $date_end = mysql_real_escape_string( $_POST[ 'end_date' ] );
+                            $date_end = date( 'd-m-Y' , strtotime( $date_end ) );
+                            
+                            
+                            echo "Displaying from : <b>" . $date_start . "</b> to <b>" . $date_end ."</b>";
+                        }
+                        else {
+                            echo "<div style='float:right;margin-right:15px;'>Displaying the article for : <b>" . $this_month . "</b><br/></div>" ;
+                        }
+                        
                         $totalDoc = sizeof( $getShortDate );
                         for( $i = 0 ; $i < $totalDoc ; $i++ ) {
+                            if( $req_fl == 0 ) {
+                                if( $this_month != date( 'M' , strtotime( $getShortDate[ $i ] ) ) ) {
+                                    continue;
+                                }
+                            }
+                            else if( $req_fl == 1 ) {
+                                $left = $date_start ;
+                                $middle = date( 'd-m-Y' , strtotime( $getShortDate[ $i ] ) ) ;
+                                $right = $date_end ;
+                                if( ! ( doCheckDateLeftSmall( $left , $middle ) && doCheckDateLeftSmall( $middle , $right ) ) ) {
+                                    continue;
+                                }
+                            }
+                            
                     ?>
                       <tr class="gradeX">
                         <td><?=$getShortDate[ $i ];?></td>
                         <td><b><?=$getTotalDocPerDay[ $i ];?></b></td>
                         <td><button type="button" onClick="showDoc( '<?=$getShortDate[ $i ];?>' );">View All</button></td>
-                        <!-- <td class="c"><button type="button" onClick="doSubmit( 31 , '2014-02-19' );" >Download</button></td> -->
                     </tr>
                     <?php
                         }
                     }
                     ?>
+                    
                 </tbody>
             </table>
-            
+            <form action="" method="POST" name="chose_date" > 
+            Start From : <input type="date" name="start_date" required="true" <?php if( isset( $_POST[ 'start_date' ] ) ) { ?> value="<?=$_POST[ 'start_date' ]?>" <?php } ?>/>
+            End At : <input type="date" name="end_date" required="true" <?php if( isset( $_POST[ 'end_date' ] ) ) { ?> value="<?=$_POST[ 'end_date' ]?>" <?php } ?> />
+            <br/>
+            <button type="submit" onClick="Javascript:doSubmit();" >Submit</button>
+        </form>
         </div>	
     </section>
     

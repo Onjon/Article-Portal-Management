@@ -10,6 +10,22 @@ $user_id = $_SESSION['userid'] ;
 
 // Onjon Code Start 
 
+// Catch Request
+if( !isset( $_GET[ 'articleId' ] ) ) {
+    die( "Invalid Request!!!" );
+}
+
+if( empty( $_GET[ 'articleId' ] ) ) {
+    die( "Invalid Request!!!" );
+}
+
+
+$articleId = mysql_real_escape_string( $_GET[ 'articleId' ] );
+if( !is_numeric( $articleId ) ) {
+    die( "Invalild Article Id!!!" );
+}
+// Catch Request End 
+
 // Connection Set 
 include('process/dbconnect.php');
 $conn = new dbconnect();
@@ -18,6 +34,28 @@ $conn -> onjonCon();
 include( "onjon/GetCityName.php" );
 $cityList = GetCityName::getCity();
 $cityRes = $cityList[ 0 ][ 0 ]; 
+
+
+// Get Function for Download Documents 
+include( "onjon/GetDocumentSingle.php" );
+$getDoc = new GetDocumentSingles();
+$getDoc -> setData( $articleId );
+$getDocRes = $getDoc -> getResult();
+if( $getDocRes == 1 ) {
+
+    $article_user_ids = $getDoc -> getUserId();
+    $article_titles = $getDoc -> getTitle();
+    $article_details = $getDoc -> getDetails();
+    $article_cities = $getDoc -> getCity();
+    
+    if( $article_user_ids != $user_id ) {
+        die( "No Article Found in your list!!!" );
+    } 
+}
+else {
+    die( "No Article Found!!!" );
+}
+
 // Onjon Code End 
 ?>
 <!doctype html>
@@ -54,10 +92,11 @@ $cityRes = $cityList[ 0 ][ 0 ];
     <script src="check/LongestCommonSubsequence.js"></script>
     <script src="check/ArticleStringDataEstimatedMatchingAlgorithm.js"></script>
     <script type="text/javascript">
-		var localUserId ;
+		var localUserId , articleTableDataId ;
+        articleTableDataId = '<?php echo $articleId ; ?>' ;
 		localUserId = '<?php echo $user_id ; ?>' ;
 	</script>
-    <script src="check/ArticleManagementModule.js"></script>
+    <script src="check/ArticleManagementModule1.js"></script>
     <!--####  Auto Search   #######----->
 	<link rel="stylesheet" type="text/css" media="all" href="auto/style.css">
 	    
@@ -97,21 +136,21 @@ $cityRes = $cityList[ 0 ][ 0 ];
         </div>
         Today's Article : <b><?=GetCityName::getTotalArticle( $user_id );?></b>
         <div class="g12 widgets">
-            	<form action="submit.php" method="post" autocomplete="off" enctype="multipart/form-data" >          
+            	<form action="#" method="post" autocomplete="off" enctype="multipart/form-data" >          
                         <fieldset>
-                        <input type="hidden" name="set_city" id="set_city" value="0" />
+                        <input type="hidden" name="set_city" id="set_city" value="1" />
                         <label>Date : <?php  echo date('d-m-Y'); ?></label>
                         <section><label for="text_field">City Name<br><span></span></label>
-                            <div><input type="text" id="autocomplete" class="biginput" name="cityname" ></div>
+                            <div><input type="text" id="autocomplete" class="biginput" value="<?=$article_cities;?>" name="cityname" ></div>
                         </section>
 						<section><label for="text_field">Title<br><span>Must have to be (40-50)% Unique</span></label>
-                            <div><input type="text" id="text_field" name="text_field" value="" onKeyUp="titleOnkeyUpEvent();"></div>
+                            <div><input type="text" id="text_field" name="text_field" value="<?=$article_titles;?>" onKeyUp="titleOnkeyUpEvent();"></div>
                             <div id="titlenNumberOfWords" ></div>
                         </section>
                         <section>
                         <label for="textarea_auto">Write Article<br><span>Must have to be (70-80)% Unique</span>
                         </label>
-                            <div><textarea id="textarea_wysiwyg" class="textarea_wysiwyg" name="textarea_wysiwyg"  class="html" rows="12"  onKeyUp="articleOnkeyUpEvent();" ></textarea>
+                            <div><textarea id="textarea_wysiwyg" class="textarea_wysiwyg" name="textarea_wysiwyg" class="html" rows="12"  onKeyUp="articleOnkeyUpEvent();" ><?=$article_details;?></textarea>
                             </div>
                             <div id="articlenNumberOfWords"></div>
                         </section>
@@ -121,9 +160,11 @@ $cityRes = $cityList[ 0 ][ 0 ];
 							</div>
 						</section>
                         -->
+                        <!-- 
                         <input type="file" id="file_upload_1" name="file_upload_1" >
                         <input type="file" id="file_upload_2" name="file_upload_2" >
                         <input type="file" id="file_upload_3" name="file_upload_3" >
+                        -->
                         <section>
 							<div>
                             <button class="reset">Reset</button>

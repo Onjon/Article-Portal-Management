@@ -11,7 +11,13 @@ if( ! isset( $_POST[ 'user_id' ] ) ) {
 	exit() ;
 }
 
+if( ! isset( $_POST[ 'city' ] ) ) {
+	echo "city not found!" ;	
+	exit() ;
+}
+
 $user_id = $_POST[ 'user_id' ] ;
+$city = $_POST[ 'city' ] ;
 
 $arr = array() ;
 $brr = array() ;

@@ -4,6 +4,16 @@ if( !isset( $_SESSION[ 'userid' ] ) )  {
 }
 class processor
 {
+    public function updateArticle( $article_id , $article , $title , $city ) {
+        require_once('dbconnect.php');
+		$access = new dbconnect();
+		$access->dbconn();
+		$access->selectdb();
+		$query = "update article_data set article_data = '" . $article . "', article_title = '" . $title . "', city = '" . $city . "' where article_id = '" . $article_id . "'";//DIP PERMANENTLY CODED THIS, ALTERATION IS STRICTLY PROHIBITTED
+		$access->insert($query);
+		$access->dbclose();
+    }
+    
     public function getUserName( $userIdParam ) {
 		require_once('dbconnect.php');
 		$access = new dbconnect();
@@ -78,7 +88,7 @@ class processor
 		$access = new dbconnect();
 		$access->dbconn();
 		$access->selectdb();
-		$query = "INSERT INTO article_data VALUES ( '" . $data . "' , '" . $title . "' , '".date('Y-m-d')."' , '".$_SESSION['userid']."' , '".$city."' ) ; ";
+		$query = "INSERT INTO article_data VALUES ( '' , '" . $data . "' , '" . $title . "' , '".date('Y-m-d')."' , '".$_SESSION['userid']."' , '".$city."' ) ; ";
 		$access->insert($query);
 		$access->dbclose();
 	}

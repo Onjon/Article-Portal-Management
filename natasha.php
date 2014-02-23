@@ -47,7 +47,7 @@ include( "controller/FileName.php" );
 
 // Get Short File Details GROUP BY Date
 include( "onjon/GetDocShort.php" );
-$getShortDoc = new GetDocShort();
+$getShortDoc = new GetDocShort( $user_id );
 $getShortDocRes = $getShortDoc -> getResult();
 
 ?>

@@ -23,23 +23,32 @@ $getUserRes = $getUser -> getResult();
 
 // Get Article List 
 include( "onjon/GetArticle.php" );
+
 // Onjon's Code End Here 
 ?>
 <?php
-// Send Search Request for Result Page 
-if( isset( $_POST[ 'search' ] ) ) {
-    if( !empty( $_POST[ 'start' ] ) && !empty( $_POST[ 'end' ] ) ) {
-        $start = mysql_real_escape_string( $_POST[ 'start' ] );
-        $end = mysql_real_escape_string( $_POST[ 'end' ] );
-        
-        $start = date( "Y-m-d" , strtotime( $start ) );
-        $end = date( "Y-m-d" , strtotime( $end ) );
-        
-        $url = "payment_search.php?start=".$start."&&end=".$end." " ; 
-        header( "Location: ".$url );
-        exit();
-    }
+// Onjon's Code Start 
+if( !isset( $_GET[ 'start' ] ) or !isset( $_GET[ 'end' ] ) ) {
+    header( "Location: payment.php" );
+    exit();
 }
+
+
+if( ( empty( $_GET[ 'start' ] ) ) || ( empty( $_GET[ 'end' ] ) ) ) {
+    header( "Location: payment.php" );
+    exit();
+}
+
+// Handle The Request 
+$start_date = mysql_real_escape_string( $_GET[ 'start' ] );
+$end_date = mysql_real_escape_string( $_GET[ 'end' ] );
+
+$start_date = date( 'Y-m-d' , strtotime( $start_date ) );
+$end_date = date( 'Y-m-d' , strtotime( $end_date ) );
+
+// Call Function for Data 
+
+// Onjon's Code End 
 ?>
 <!doctype html>
 <html lang="en-us">
@@ -77,28 +86,7 @@ if( isset( $_POST[ 'search' ] ) ) {
 	<!-- some basic functions -->
 	<script src="js/functions.js"></script>
 		
-	<script>
-        function doSearch() {
-            var start_date , end_date , id ;
-            id = document.getElementById( "search" ).value; 
-            start_date = document.getElementById( "start" ).value; 
-            end_date = document.getElementById( "end" ).value; 
-            
-            if( id != "" && start_date != "" && end_date != "" ) {
-                 if( start_date <= end_date ) {
-                    // Do Submit 
-                    document.chose_date.submit();
-                 }
-                 else {
-                    // show alert message 
-                    alert( "Start Date can not be less than End Date!!!" );                    
-                 }
-            }
-            else {
-                alert( "Please insert Date" ); 
-            }
-        }
-	</script>
+	
 	
 	
 </head>
@@ -138,9 +126,7 @@ if( isset( $_POST[ 'search' ] ) ) {
 						<th>Name</th>
                         <th>Email</th>
                         <th>Rate</th>
-                        <th>No. of Artcle(This Month)</th>
-                        <th>This Month Income</th>
-                        <th>Today Income</th>
+                        <th>No. of Artcle</th>
                         <th>Total Income</th>
 					</tr>
 				</thead>
@@ -155,22 +141,15 @@ if( isset( $_POST[ 'search' ] ) ) {
                         $totalUsers = sizeof( $userIds );
                         for( $i = 0 ; $i < $totalUsers ; $i++ ) {
                         $totalArticle = GetArticle::getTotalArticle( $userIds[ $i ] );
-                        $totalArticleToday = GetArticle::getTodaysArticle( $userIds[ $i ] );
-                        $totalArticleThisMonth = GetArticle::getMonthlyArticles( $userIds[ $i ] );
-                        $userRatePerArticle = $userRates[ $i ] ;
-                        
-                        if( $userIds[ $i ] != $_SESSION[ 'userid' ] ) {
-                            continue;
-                        }
+                        $totalArticleFoundOnDate = GetArticle::getSearchArticles( $userIds[ $i ] , $start_date , $end_date );
+                        $userRatePerArticle = $userRates[ $i ] ; // User's Per Article Rate 
                     ?>
 					<tr class="gradeX">
                         <td><?=$userNames[ $i ];?></td>
                         <td><?=$userEmails[ $i ];?></td>
                         <td><?=$userRatePerArticle;?></td>
-                        <td><?=$totalArticleThisMonth;?></td>
-                        <td><?=$totalArticleThisMonth * $userRatePerArticle ;?></td>
-                        <td><?=$totalArticleToday * $userRatePerArticle;?></td>
-                        <td class="c"><?=$totalArticle * $userRatePerArticle;?></td>
+                        <td><?=$totalArticleFoundOnDate;?></td>
+                        <td class="c"><?=$totalArticleFoundOnDate * $userRatePerArticle;?></td>
                     </tr>
                     <?php
                         }
@@ -179,14 +158,6 @@ if( isset( $_POST[ 'search' ] ) ) {
                 </tbody>
             </table>
             
-            <form action="" method="POST" name="chose_date" > 
-                <input type="hidden" name="search" id="search" value="<?=rand( 10 , 100 );?>" />
-                Start From : <input type="date" name="start" id="start" />
-                End At : <input type="date" name="end" id="end"/>
-                <br/>
-                <button type="submit" onClick="Javascript:doSearch();">Search</button>
-            </form>
-
         </div>	
     </section>
     
