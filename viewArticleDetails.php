@@ -144,7 +144,13 @@ if( $getDocRes == 1 ) {
             City : <b><?=$article_city[ $i ];?></b><br/>
             <br/>
             <b><?=$article_details[ $i ];?></b><br/>
+            <?php
+            if( $_SESSION[ 'access' ] != "admin" ) {
+            ?>
             <button type="submit" onClick="Javascript:updateArticle(<?=$article_ids[ $i ];?>);" >Update</button>
+            <?php
+            }
+            ?>
             <br/>
             --------------------------------------
             <?php

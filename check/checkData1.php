@@ -33,7 +33,7 @@ $res = ( int ) $asdemsObj -> checkTheArticle() ;
 if( $res < 80 ) {
 	$pc -> updateArticle( $article_id , $article , $title , $city ) ;
 	echo "Successfully updated article onto the database!" ;
-    echo "<meta HTTP-EQUIV='refresh' content='0;url='>";
+    // echo "<meta HTTP-EQUIV='refresh' content='0;url='>";
 }
 else {
 	echo "Article has failed the designated percentage of unique content comparison test!" ;

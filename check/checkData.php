@@ -29,7 +29,7 @@ $res = ( int ) $asdemsObj -> checkTheArticle() ;
 if( $res < 80 ) {
 	$pc -> insertArticle( $article , $title , $city ) ;
 	echo "Successfully added article onto the database!" ;
-    echo "<meta HTTP-EQUIV='refresh' content='0;url='>";
+    // echo "<meta HTTP-EQUIV='refresh' content='0;url='>";
 }
 else {
 	echo "Article has failed the designated percentage of unique content comparison test!" ;
